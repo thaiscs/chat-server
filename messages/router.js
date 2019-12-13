@@ -11,4 +11,10 @@ router.get("/messages", (req, res, next) => {
     .catch(next);
 });
 
+router.post("/messages", (req, res, next) => {
+  Message.create(req.body)
+    .then(message => res.json(message))
+    .catch(next);
+});
+
 module.exports = router;
