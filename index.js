@@ -2,6 +2,8 @@ const express = require("express");
 const messageRouterFactory = require("./messages/router");
 const bodyParser = require("body-parser");
 const parserMiddleware = bodyParser.json();
+const cors = require("cors");
+const corsMiddleware = cors();
 const Sse = require("json-sse");
 const stream = new Sse();
 const messageRouter = messageRouterFactory(stream);
@@ -10,6 +12,7 @@ const Message = require("./messages/model");
 const app = express();
 const port = 4000;
 
+app.use(corsMiddleware);
 app.use(parserMiddleware);
 app.use(messageRouter);
 
@@ -21,7 +24,11 @@ app.get("/", (req, resp) => {
 app.get("/stream", async (req, res, next) => {
   try {
     const messages = await Message.findAll(); // get array
-    const string = JSON.stringify(messages); // convert array into string "serialize" into series of carachters
+    const action = {
+      type: "ALL_MESSAGES",
+      payload: messages
+    };
+    const string = JSON.stringify(action); // convert array into string "serialize" into series of carachters
     stream.updateInit(string); // prepare string to be sent to the client right after they connect
     stream.init(req, res); // connect the user to the stream
   } catch (error) {

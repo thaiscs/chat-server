@@ -14,16 +14,21 @@ function factory(stream) {
     }
   });
 
-  router.post("/messages", async (req, res, next) => {
+  async function onPost(req, res, next) {
     try {
       const message = await Message.create(req.body);
-      const string = JSON.stringify(message);
+      const action = {
+        type: "NEW_MESSAGE",
+        payload: message
+      };
+      const string = JSON.stringify(action);
       stream.send(string);
       res.send(message);
     } catch (error) {
       next(error);
     }
-  });
+  }
+  router.post("/messages", onPost);
 
   return router;
 }
